@@ -1,0 +1,27 @@
+{
+  "name": "OpenRouter AI Chat",
+  "short_name": "AI Chat",
+  "description": "A modern AI chat application powered by OpenRouter API",
+  "theme_color": "#00D4D4",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "ja",
+  "dir": "ltr"
+}

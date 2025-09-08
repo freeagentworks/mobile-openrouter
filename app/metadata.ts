@@ -1,0 +1,64 @@
+import { Metadata, Viewport } from 'next';
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://your-domain.com'), // Change this to your actual domain
+  title: 'OpenRouter AI Chat',
+  description: 'A modern AI chat application powered by OpenRouter API',
+  keywords: ['AI', 'Chat', 'OpenRouter', 'LLM', 'GPT', 'Claude', 'Gemini'],
+  authors: [{ name: 'OpenRouter AI Chat' }],
+  creator: 'OpenRouter AI Chat',
+  publisher: 'OpenRouter AI Chat',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', sizes: '512x512', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/icon.svg', sizes: '180x180', type: 'image/svg+xml' }
+    ],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    url: 'https://your-domain.com',
+    title: 'OpenRouter AI Chat',
+    description: 'A modern AI chat application powered by OpenRouter API',
+    siteName: 'OpenRouter AI Chat',
+    images: [{
+      url: '/icon.svg',
+      width: 512,
+      height: 512,
+      alt: 'OpenRouter AI Chat Logo',
+    }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'OpenRouter AI Chat',
+    description: 'A modern AI chat application powered by OpenRouter API',
+    images: ['/icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#00D4D4',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
