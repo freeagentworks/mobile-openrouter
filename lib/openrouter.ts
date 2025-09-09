@@ -46,6 +46,9 @@ export interface OpenRouterRequestOptions {
   temperature?: number;
   top_p?: number;
   stream?: boolean;
+  dataCollection?: 'allow' | 'deny';
+  trainingData?: 'allow' | 'deny';
+  outputPublishing?: 'allow' | 'deny';
 }
 
 // Fetch available models from OpenRouter API
@@ -85,30 +88,66 @@ export async function sendOpenRouterRequest({
   temperature = 0.7,
   top_p = 0.9,
   stream = true,
+  dataCollection = 'allow',
+  trainingData = 'allow',
+  outputPublishing = 'allow',
 }: OpenRouterRequestOptions) {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'AI Chat App',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      top_p,
-      stream,
-    }),
+  console.log('Sending request to OpenRouter:', { 
+    model, 
+    apiKey: apiKey ? '***' : 'missing',
+    dataCollection,
+    trainingData,
+    outputPublishing,
+    messagesCount: messages.length
   });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
-    throw new Error(error.error?.message || 'Failed to fetch from OpenRouter API');
+  
+  const requestBody = {
+    model,
+    messages,
+    temperature,
+    top_p,
+    stream
+  };
+  
+  // Validate API key format
+  if (!apiKey || !apiKey.startsWith('sk-or-v1-')) {
+    throw new Error('無効なAPIキー形式です。正しいOpenRouter APIキー（sk-or-v1-で始まる）を設定してください。');
   }
+  
+  const requestHeaders = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+  
+  console.log('Request headers:', requestHeaders);
+  console.log('Request body:', requestBody);
+  
+  try {
+    const response = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: requestHeaders,
+      body: JSON.stringify(requestBody),
+    });
 
-  return response;
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(error.error?.message || 'Failed to fetch from OpenRouter API');
+    }
+
+    return response;
+  } catch (error) {
+    console.error('OpenRouter fetch error:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('ネットワークエラー: APIキーが無効か、ネットワーク接続に問題があります。設定画面でAPIキーを確認してください。');
+    }
+    throw error;
+  }
 }
 
 export function convertMessagesToOpenRouterFormat(

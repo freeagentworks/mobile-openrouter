@@ -57,6 +57,9 @@ export function ChatInterface() {
     topP,
     isLoading,
     setIsLoading,
+    dataCollection,
+    trainingData,
+    outputPublishing,
   } = useChatStore();
 
   useEffect(() => {
@@ -141,6 +144,9 @@ export function ChatInterface() {
         temperature,
         top_p: topP,
         stream: true,
+        dataCollection,
+        trainingData,
+        outputPublishing,
       });
 
       let fullResponse = '';

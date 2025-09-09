@@ -30,13 +30,21 @@ export interface ChatStore {
   topP: number;
   setTopP: (value: number) => void;
   
+  // Privacy Settings
+  dataCollection: 'allow' | 'deny';
+  setDataCollection: (setting: 'allow' | 'deny') => void;
+  trainingData: 'allow' | 'deny';
+  setTrainingData: (setting: 'allow' | 'deny') => void;
+  outputPublishing: 'allow' | 'deny';
+  setOutputPublishing: (setting: 'allow' | 'deny') => void;
+  
   // UI State
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
 
-const DEFAULT_TEXT_MODEL = 'openai/gpt-oss-120b:free';
-const DEFAULT_IMAGE_MODEL = 'meta-llama/llama-4-maverick:free';
+const DEFAULT_TEXT_MODEL = 'google/gemini-2.0-flash-exp:free';
+const DEFAULT_IMAGE_MODEL = 'google/gemini-2.0-flash-exp:free';
 
 export const useChatStore = create<ChatStore>()(
   persist(
@@ -70,6 +78,14 @@ export const useChatStore = create<ChatStore>()(
       topP: 0.9,
       setTopP: (value) => set({ topP: value }),
       
+      // Privacy Settings
+      dataCollection: 'allow' as 'allow' | 'deny',
+      setDataCollection: (setting) => set({ dataCollection: setting }),
+      trainingData: 'allow' as 'allow' | 'deny',
+      setTrainingData: (setting) => set({ trainingData: setting }),
+      outputPublishing: 'allow' as 'allow' | 'deny',
+      setOutputPublishing: (setting) => set({ outputPublishing: setting }),
+      
       // UI State
       isLoading: false,
       setIsLoading: (loading) => set({ isLoading: loading }),
@@ -82,6 +98,9 @@ export const useChatStore = create<ChatStore>()(
         selectedModel: state.selectedModel,
         temperature: state.temperature,
         topP: state.topP,
+        dataCollection: state.dataCollection,
+        trainingData: state.trainingData,
+        outputPublishing: state.outputPublishing,
       }),
     }
   )

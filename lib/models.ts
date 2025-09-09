@@ -207,6 +207,6 @@ export function getDefaultModelForImage(): string {
 }
 
 export function getDefaultModelForText(): string {
-  // Use a free text model as default
-  return 'openai/gpt-oss-120b:free';
+  // Try free model first, fallback to paid if needed
+  return 'google/gemini-2.0-flash-exp:free';
 }

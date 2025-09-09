@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body className={inter.className}>
+    <html lang="ja" suppressHydrationWarning={true}>
+      <body className={inter.className} suppressHydrationWarning={true}>
         <BottomNav />
         <main className="md:ml-64">
           {children}

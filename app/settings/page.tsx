@@ -17,7 +17,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useChatStore } from '@/store/chat-store';
-import { Key, Trash2, Download, ExternalLink, Save, Eye, EyeOff } from 'lucide-react';
+import { Key, Trash2, Download, ExternalLink, Save, Eye, EyeOff, Shield } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 export default function SettingsPage() {
   const {
@@ -29,6 +30,12 @@ export default function SettingsPage() {
     setTopP,
     messages,
     clearMessages,
+    dataCollection,
+    setDataCollection,
+    trainingData,
+    setTrainingData,
+    outputPublishing,
+    setOutputPublishing,
   } = useChatStore();
 
   const [localApiKey, setLocalApiKey] = useState('');
@@ -191,6 +198,81 @@ export default function SettingsPage() {
                 />
                 <p className="text-xs text-muted-foreground mt-2">
                   単語選択の多様性を制御します。累積確率の閾値を設定します。
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Privacy Settings */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              プライバシー設定
+            </h2>
+            
+            <div className="space-y-6">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  これらの設定は、OpenRouterへのAPIリクエストで送信されるデータポリシーを制御します。
+                  無料モデルを使用する場合は、データ収集を許可する必要がある場合があります。
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="data-collection">データ収集を許可</Label>
+                    <p className="text-sm text-muted-foreground">
+                      あなたの入力データがモデル改善のために使用されることを許可します
+                    </p>
+                  </div>
+                  <Switch
+                    id="data-collection"
+                    checked={dataCollection === 'allow'}
+                    onCheckedChange={(checked) => 
+                      setDataCollection(checked ? 'allow' : 'deny')
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="training-data">学習データとしての使用を許可</Label>
+                    <p className="text-sm text-muted-foreground">
+                      あなたの会話が将来のモデル学習に使用されることを許可します
+                    </p>
+                  </div>
+                  <Switch
+                    id="training-data"
+                    checked={trainingData === 'allow'}
+                    onCheckedChange={(checked) => 
+                      setTrainingData(checked ? 'allow' : 'deny')
+                    }
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="output-publishing">出力の公開を許可</Label>
+                    <p className="text-sm text-muted-foreground">
+                      AIの応答が研究目的などで公開されることを許可します
+                    </p>
+                  </div>
+                  <Switch
+                    id="output-publishing"
+                    checked={outputPublishing === 'allow'}
+                    onCheckedChange={(checked) => 
+                      setOutputPublishing(checked ? 'allow' : 'deny')
+                    }
+                  />
+                </div>
+              </div>
+              
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>注意:</strong> 無料モデル（:free付きモデル）を使用する場合、
+                  データ収集を許可する必要がある場合があります。
+                  プライバシーを重視する場合は、有料モデルを使用することをお勧めします。
                 </p>
               </div>
             </div>
