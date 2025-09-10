@@ -46,6 +46,7 @@ export interface OpenRouterRequestOptions {
   temperature?: number;
   top_p?: number;
   stream?: boolean;
+  max_tokens?: number;
   dataCollection?: 'allow' | 'deny';
   trainingData?: 'allow' | 'deny';
   outputPublishing?: 'allow' | 'deny';
@@ -56,6 +57,8 @@ export async function fetchOpenRouterModels(apiKey?: string): Promise<OpenRouter
   try {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://mobile-openrouter.vercel.app',
+      'X-Title': 'OpenRouter Mobile Chat App',
     };
     
     // API key is optional for fetching models
@@ -88,39 +91,90 @@ export async function sendOpenRouterRequest({
   temperature = 0.7,
   top_p = 0.9,
   stream = true,
-  dataCollection = 'allow',
-  trainingData = 'allow',
-  outputPublishing = 'allow',
+  max_tokens,
+  dataCollection,
+  trainingData,
+  outputPublishing,
 }: OpenRouterRequestOptions) {
+  // Set appropriate data policies based on model type
+  const isFreeModel = model.endsWith(':free');
+  const finalDataCollection = dataCollection ?? (isFreeModel ? 'deny' : 'allow');
+  const finalTrainingData = trainingData ?? (isFreeModel ? 'deny' : 'allow');
+  const finalOutputPublishing = outputPublishing ?? (isFreeModel ? 'deny' : 'allow');
+  
+  // Set default max_tokens for models that require it
+  const finalMaxTokens = max_tokens ?? (model === 'openai/gpt-oss-120b:free' ? 4096 : undefined);
   console.log('Sending request to OpenRouter:', { 
     model, 
     apiKey: apiKey ? '***' : 'missing',
-    dataCollection,
-    trainingData,
-    outputPublishing,
+    isFreeModel,
+    dataCollection: finalDataCollection,
+    trainingData: finalTrainingData,
+    outputPublishing: finalOutputPublishing,
     messagesCount: messages.length
   });
   
-  const requestBody = {
+  interface RequestBody {
+    model: string;
+    messages: OpenRouterMessage[];
+    temperature: number;
+    top_p: number;
+    stream: boolean;
+    max_tokens?: number;
+    data_collection?: 'allow' | 'deny';
+    training_data?: 'allow' | 'deny';
+    output_publishing?: 'allow' | 'deny';
+  }
+
+  const requestBody: RequestBody = {
     model,
     messages,
     temperature,
     top_p,
     stream
   };
+
+  // Add max_tokens if specified
+  if (finalMaxTokens !== undefined) {
+    requestBody.max_tokens = finalMaxTokens;
+  }
+
+  // Add OpenRouter specific settings
+  if (finalDataCollection !== 'allow') {
+    requestBody.data_collection = finalDataCollection;
+  }
+  if (finalTrainingData !== 'allow') {
+    requestBody.training_data = finalTrainingData;
+  }
+  if (finalOutputPublishing !== 'allow') {
+    requestBody.output_publishing = finalOutputPublishing;
+  }
   
   // Validate API key format
   if (!apiKey || !apiKey.startsWith('sk-or-v1-')) {
     throw new Error('無効なAPIキー形式です。正しいOpenRouter APIキー（sk-or-v1-で始まる）を設定してください。');
   }
   
+  // Validate model name
+  if (!model || model.trim() === '') {
+    throw new Error('モデル名が指定されていません。');
+  }
+  
+  // Validate messages
+  if (!messages || messages.length === 0) {
+    throw new Error('メッセージが空です。');
+  }
+  
   const requestHeaders = {
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
+    'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://mobile-openrouter.vercel.app',
+    'X-Title': 'OpenRouter Mobile Chat App',
   };
   
+  console.log('Request URL:', OPENROUTER_API_URL);
   console.log('Request headers:', requestHeaders);
-  console.log('Request body:', requestBody);
+  console.log('Request body:', JSON.stringify(requestBody, null, 2));
   
   try {
     const response = await fetch(OPENROUTER_API_URL, {
@@ -130,8 +184,17 @@ export async function sendOpenRouterRequest({
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
-      throw new Error(error.error?.message || 'Failed to fetch from OpenRouter API');
+      console.error('OpenRouter API returned error status:', response.status, response.statusText);
+      console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const error = await response.json().catch(async () => {
+        const text = await response.text().catch(() => 'Unable to read response');
+        console.error('Raw error response:', text);
+        return { error: { message: response.statusText } };
+      });
+      
+      console.error('Parsed error response:', error);
+      throw new Error(error.error?.message || `OpenRouter API Error: ${response.status} ${response.statusText}`);
     }
 
     return response;

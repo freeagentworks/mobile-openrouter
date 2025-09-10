@@ -13,93 +13,11 @@ export interface ModelInfo {
   };
 }
 
-// Fixed free model IDs - these are commonly available free models on OpenRouter
-export const FREE_MODELS: ModelInfo[] = [
-  {
-    id: 'openai/gpt-oss-120b:free',
-    name: 'GPT-OSS 120B (Free)',
-    provider: 'OpenAI',
-    contextLength: 128000,
-    supportsImages: false,
-    isFree: true,
-  },
-  {
-    id: 'deepseek/deepseek-chat-v3.1:free',
-    name: 'DeepSeek V3.1 (Free)',
-    provider: 'DeepSeek',
-    contextLength: 128000,
-    supportsImages: false,
-    isFree: true,
-  },
-  {
-    id: 'google/gemini-2.0-flash-exp:free',
-    name: 'Gemini 2.0 Flash Exp (Free)',
-    provider: 'Google',
-    contextLength: 1048576,
-    supportsImages: true,
-    isFree: true,
-  },
-  {
-    id: 'google/gemini-1.5-flash:free',
-    name: 'Gemini 1.5 Flash (Free)',
-    provider: 'Google',
-    contextLength: 1048576,
-    supportsImages: true,
-    isFree: true,
-  },
-  {
-    id: 'mistralai/mistral-7b-instruct:free',
-    name: 'Mistral 7B Instruct (Free)',
-    provider: 'Mistral',
-    contextLength: 32768,
-    supportsImages: false,
-    isFree: true,
-  },
-  {
-    id: 'meta-llama/llama-3.2-90b-vision-instruct:free',
-    name: 'Llama 3.2 90B Vision (Free)',
-    provider: 'Meta',
-    contextLength: 128000,
-    supportsImages: true,
-    isFree: true,
-  },
-  {
-    id: 'microsoft/phi-3-medium-128k-instruct:free',
-    name: 'Phi-3 Medium 128K (Free)',
-    provider: 'Microsoft',
-    contextLength: 128000,
-    supportsImages: false,
-    isFree: true,
-  },
-];
+// Free models will be populated dynamically from API
+export let FREE_MODELS: ModelInfo[] = [];
 
-// Default premium models (will be updated dynamically)
-export let PREMIUM_MODELS: ModelInfo[] = [
-  {
-    id: 'openai/gpt-4o',
-    name: 'GPT-4o',
-    provider: 'OpenAI',
-    contextLength: 128000,
-    supportsImages: true,
-    isFree: false,
-  },
-  {
-    id: 'anthropic/claude-3.5-sonnet',
-    name: 'Claude 3.5 Sonnet',
-    provider: 'Anthropic',
-    contextLength: 200000,
-    supportsImages: true,
-    isFree: false,
-  },
-  {
-    id: 'google/gemini-pro-1.5',
-    name: 'Gemini Pro 1.5',
-    provider: 'Google',
-    contextLength: 2097152,
-    supportsImages: true,
-    isFree: false,
-  },
-];
+// Premium models will be populated dynamically from API
+export let PREMIUM_MODELS: ModelInfo[] = [];
 
 // Combine free and premium models
 export let AVAILABLE_MODELS: ModelInfo[] = [...FREE_MODELS, ...PREMIUM_MODELS];
@@ -126,6 +44,11 @@ function convertOpenRouterModel(model: OpenRouterModel): ModelInfo {
     'cohere': 'Cohere',
     'deepseek': 'DeepSeek',
     'x-ai': 'xAI',
+    'moonshotai': 'Moonshot AI',
+    'qwen': 'Qwen',
+    'z-ai': 'Zhipu AI',
+    'tencent': 'Tencent',
+    'cognitivecomputations': 'Cognitive Computations',
   };
 
   return {
@@ -155,43 +78,125 @@ export async function updateAvailableModels(apiKey?: string): Promise<void> {
     // Filter and sort models
     const convertedModels = models.map(convertOpenRouterModel);
     
-    // Get premium models (excluding free ones)
-    const premiumModels = convertedModels
-      .filter(m => !m.isFree)
-      .filter(m => {
-        // Filter for latest models
-        const id = m.id.toLowerCase();
-        return (
-          // Latest GPT models (GPT-4o, GPT-5, o1 series)
-          (id.includes('gpt-4o') || id.includes('gpt-5') || id.includes('o1')) ||
-          // Latest Claude models (3.5, 4.x series)
-          (id.includes('claude') && (id.includes('3.5') || id.includes('4'))) ||
-          // Latest Gemini models (2.0, 2.5 series)
-          (id.includes('gemini') && (id.includes('2.0') || id.includes('2.5') || id.includes('pro'))) ||
-          // Latest Llama models
-          (id.includes('llama') && (id.includes('3.3') || id.includes('3.2'))) ||
-          // Other notable models
-          id.includes('deepseek') ||
-          id.includes('command-r') ||
-          id.includes('grok')
-        );
-      })
+    // Get free models
+    const freeModels = convertedModels
+      .filter(m => m.isFree)
       .sort((a, b) => {
         // Sort by provider and then by name
-        const providerOrder = ['OpenAI', 'Anthropic', 'Google', 'Meta', 'xAI', 'Others'];
+        const providerOrder = ['OpenAI', 'Google', 'Anthropic', 'Meta', 'xAI', 'DeepSeek', 'Moonshot AI', 'Others'];
         const aOrder = providerOrder.indexOf(a.provider) !== -1 ? providerOrder.indexOf(a.provider) : 999;
         const bOrder = providerOrder.indexOf(b.provider) !== -1 ? providerOrder.indexOf(b.provider) : 999;
         
         if (aOrder !== bOrder) return aOrder - bOrder;
         return a.name.localeCompare(b.name);
+      });
+
+    // Debug: Check for Gemini free models specifically
+    const geminiFreeModels = freeModels.filter(m => 
+      m.provider === 'Google' && m.id.includes('gemini')
+    );
+    console.log(`Gemini free models found: ${geminiFreeModels.length}`);
+    geminiFreeModels.forEach(model => {
+      console.log(`  - ${model.id} (${model.provider}) - ${model.name}`);
+    });
+    
+    // Get premium models with more inclusive filtering
+    const sortedPremiumModels = convertedModels
+      .filter(m => !m.isFree)
+      .filter(m => {
+        // More inclusive filter - include most modern models
+        const id = m.id.toLowerCase();
+        const name = m.name.toLowerCase();
+        
+        return (
+          // OpenAI models - include all GPT variants
+          id.includes('gpt') || id.includes('o1') || id.includes('o3') ||
+          // Anthropic models
+          id.includes('claude') ||
+          // Google models
+          id.includes('gemini') ||
+          // Meta models
+          id.includes('llama') ||
+          // xAI models
+          id.includes('grok') ||
+          // DeepSeek models
+          id.includes('deepseek') ||
+          // Mistral models
+          id.includes('mistral') || id.includes('mixtral') ||
+          // Qwen models
+          id.includes('qwen') ||
+          // Moonshot models
+          id.includes('moonshot') || id.includes('kimi') ||
+          // Other AI21 models
+          id.includes('jamba') ||
+          // Command R models
+          id.includes('command-r') ||
+          // Phi models
+          id.includes('phi') ||
+          // Claude name variations
+          name.includes('sonnet') || name.includes('opus') || name.includes('haiku') ||
+          // Other popular models
+          id.includes('nova') || id.includes('titan') || id.includes('wizard') ||
+          id.includes('orca') || id.includes('dolphin') || id.includes('alpaca') ||
+          // Provider-based inclusion for major providers
+          id.startsWith('openai/') || id.startsWith('anthropic/') || 
+          id.startsWith('google/') || id.startsWith('meta-llama/') ||
+          id.startsWith('x-ai/') || id.startsWith('mistralai/') ||
+          id.startsWith('deepseek/') || id.startsWith('qwen/') ||
+          id.startsWith('moonshotai/')
+        );
       })
-      .slice(0, 25); // Limit to top 25 premium models
+      .sort((a, b) => {
+        // Sort by provider and then by name
+        const providerOrder = ['OpenAI', 'Anthropic', 'Google', 'Meta', 'xAI', 'DeepSeek', 'Mistral', 'Others'];
+        const aOrder = providerOrder.indexOf(a.provider) !== -1 ? providerOrder.indexOf(a.provider) : 999;
+        const bOrder = providerOrder.indexOf(b.provider) !== -1 ? providerOrder.indexOf(b.provider) : 999;
+        
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        return a.name.localeCompare(b.name);
+      });
+
+    // Select models with balanced representation from major providers
+    const selectedModels: ModelInfo[] = [];
+    const maxPerProvider = 8; // Limit per provider to ensure variety
+    const providerCounts: Record<string, number> = {};
+    
+    for (const model of sortedPremiumModels) {
+      const count = providerCounts[model.provider] || 0;
+      if (count < maxPerProvider) {
+        selectedModels.push(model);
+        providerCounts[model.provider] = count + 1;
+      }
+      
+      // Stop when we have enough models
+      if (selectedModels.length >= 60) break;
+    }
+    
+    const premiumModels = selectedModels;
 
     // Update global models list
+    FREE_MODELS = freeModels;
     PREMIUM_MODELS = premiumModels;
     AVAILABLE_MODELS = [...FREE_MODELS, ...PREMIUM_MODELS];
     
     console.log(`Updated models: ${FREE_MODELS.length} free, ${PREMIUM_MODELS.length} premium`);
+    
+    // Debug: Check for xAI models specifically
+    const xaiModels = PREMIUM_MODELS.filter(m => m.provider === 'xAI' || m.id.includes('x-ai'));
+    console.log(`xAI models found: ${xaiModels.length}`);
+    xaiModels.forEach(model => {
+      console.log(`  - ${model.id} (${model.provider})`);
+    });
+
+    // Debug: Check for all Google models in both free and premium
+    const allGoogleModels = AVAILABLE_MODELS.filter(m => m.provider === 'Google');
+    const googleFreeModels = allGoogleModels.filter(m => m.isFree);
+    const googlePremiumModels = allGoogleModels.filter(m => !m.isFree);
+    console.log(`Google models: ${allGoogleModels.length} total (${googleFreeModels.length} free, ${googlePremiumModels.length} premium)`);
+    console.log('Google free models:');
+    googleFreeModels.forEach(model => {
+      console.log(`  - ${model.id} - ${model.name}`);
+    });
   } catch (error) {
     console.error('Failed to update models:', error);
   }
@@ -202,11 +207,13 @@ export function getModelById(modelId: string): ModelInfo | undefined {
 }
 
 export function getDefaultModelForImage(): string {
-  // Use a free image-capable model as default
-  return 'google/gemini-2.0-flash-exp:free';
+  // Try to find a free image-capable model, fallback to a known one
+  const imageModel = AVAILABLE_MODELS.find(m => m.isFree && m.supportsImages);
+  return imageModel?.id || 'google/gemini-2.0-flash-exp:free';
 }
 
 export function getDefaultModelForText(): string {
-  // Try free model first, fallback to paid if needed
-  return 'google/gemini-2.0-flash-exp:free';
+  // Try to find a free text model, fallback to a known one
+  const textModel = AVAILABLE_MODELS.find(m => m.isFree);
+  return textModel?.id || 'openai/gpt-oss-120b:free';
 }
