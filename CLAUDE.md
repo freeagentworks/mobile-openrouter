@@ -1,11 +1,11 @@
 # CLAUDE.md
 
-このファイルは、Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスを提供します。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## よく使用する開発コマンド
 
 ```bash
-# 開発サーバー起動
+# 開発サーバー起動 (http://localhost:3000)
 npm run dev
 
 # プロダクションビルド
@@ -14,7 +14,7 @@ npm run build
 # プロダクションサーバー起動
 npm run start
 
-# Lintチェック
+# Lintチェック (ESLint)
 npm run lint
 
 # TypeScript型チェック

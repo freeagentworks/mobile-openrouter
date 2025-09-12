@@ -34,17 +34,10 @@ export const metadata: Metadata = {
     siteName: 'OpenRouter AI Chat',
     images: [
       {
-        url: '/icon.svg',
-        width: 512,
-        height: 512,
-        alt: 'OpenRouter AI Chat Logo',
-        type: 'image/svg+xml',
-      },
-      {
-        url: '/og-image.png',
+        url: '/opengraph-image.png',
         width: 1200,
         height: 630,
-        alt: 'OpenRouter AI Chat - Modern AI Chat Application',
+        alt: 'OpenRouter AI Chat Logo',
         type: 'image/png',
       }
     ],
@@ -53,7 +46,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'OpenRouter AI Chat',
     description: 'A modern AI chat application powered by OpenRouter API',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image.png'],
     creator: '@openrouter',
     site: '@openrouter',
   },
