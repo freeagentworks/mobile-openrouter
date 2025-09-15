@@ -11,14 +11,15 @@
   "icons": [
     {
       "src": "/mobileopenrouter.png",
-      "sizes": "772x760",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
       "src": "/mobileopenrouter.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "categories": ["productivity", "utilities"],

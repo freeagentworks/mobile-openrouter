@@ -1,7 +1,10 @@
 import { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://your-domain.com'), // Change this to your actual domain
+  // Use deployment URL if provided; otherwise let Next.js emit relative URLs
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL
+    ? new URL(process.env.NEXT_PUBLIC_APP_URL)
+    : undefined,
   title: 'OpenRouter AI Chat',
   description: 'A modern AI chat application powered by OpenRouter API',
   keywords: ['AI', 'Chat', 'OpenRouter', 'LLM', 'GPT', 'Claude', 'Gemini'],
@@ -16,19 +19,21 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/mobileopenrouter.png', sizes: '32x32', type: 'image/png' },
       { url: '/mobileopenrouter.png', sizes: '16x16', type: 'image/png' },
-      { url: '/mobileopenrouter.png', sizes: '192x192', type: 'image/png' }
+      { url: '/mobileopenrouter.png', sizes: '32x32', type: 'image/png' },
+      { url: '/mobileopenrouter.png', sizes: '192x192', type: 'image/png' },
+      { url: '/mobileopenrouter.png', sizes: '512x512', type: 'image/png' },
     ],
     shortcut: '/mobileopenrouter.png',
     apple: [
-      { url: '/mobileopenrouter.png', sizes: '180x180', type: 'image/png' }
+      { url: '/mobileopenrouter.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   openGraph: {
     type: 'website',
     locale: 'ja_JP',
-    url: 'https://your-domain.com',
+    // When metadataBase is set, relative paths become absolute automatically
+    url: '/',
     title: 'OpenRouter AI Chat',
     description: 'A modern AI chat application powered by OpenRouter API',
     siteName: 'OpenRouter AI Chat',
@@ -39,7 +44,7 @@ export const metadata: Metadata = {
         height: 760,
         alt: 'OpenRouter AI Chat Logo',
         type: 'image/png',
-      }
+      },
     ],
   },
   twitter: {
