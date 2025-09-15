@@ -10,15 +10,15 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/mobileopenrouter.png",
+      "sizes": "772x760",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon.svg",
+      "src": "/mobileopenrouter.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "categories": ["productivity", "utilities"],
